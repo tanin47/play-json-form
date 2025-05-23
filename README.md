@@ -121,7 +121,7 @@ Usage
 Add the below line to your `build.sbt`:
 
 ```
-libraryDependencies += "io.github.tanin47" %% "play-json-form" % "1.0.0"
+libraryDependencies += "io.github.tanin47" %% "play-json-form" % "1.1.0"
 ```
 
 The artifacts are hosted here: https://bintray.com/givers/maven/play-json-form
