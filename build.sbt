@@ -22,11 +22,12 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 
 coverageExcludedPackages := "givers.form.generated.*"
 
-organization := "io.github.tanin47"
-organizationName := "tanin47"
-homepage := Some(url("https://github.com/tanin47/play-json-form"))
+ThisBuild / organization := "io.github.tanin47"
+ThisBuild / organizationName := "tanin47"
+ThisBuild / organizationHomepage := Some(url("https://github.com/tanin47"))
+ThisBuild / homepage := Some(url("https://github.com/tanin47/play-json-form"))
 
-scmInfo := Some(
+ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/tanin47/play-json-form"),
     "scm:git@github.com:tanin47/play-json-form.git"
@@ -34,20 +35,20 @@ scmInfo := Some(
 )
 
 credentials += Credentials(Path.userHome / ".sbt" / "sonatype_central_credentials")
-publishMavenStyle := true
 
 Test / publishArtifact := false
 
-pomIncludeRepository := { _ => false }
-publishTo := {
-  val nexus = "https://s01.oss.sonatype.org/"
-  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+ThisBuild / publishMavenStyle := true
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := {
+  val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+  if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+  else localStaging.value
 }
 
-licenses := Seq(("MIT", url("http://opensource.org/licenses/MIT")))
+ThisBuild / licenses := Seq(("MIT", url("http://opensource.org/licenses/MIT")))
 
-developers := List(
+ThisBuild / developers := List(
   Developer(
     id = "tanin",
     name = "Tanin Na Nakorn",
