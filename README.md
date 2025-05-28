@@ -121,10 +121,10 @@ Usage
 Add the below line to your `build.sbt`:
 
 ```
-libraryDependencies += "io.github.tanin47" %% "play-json-form" % "1.1.1"
+libraryDependencies += "io.github.tanin47" %% "play-json-form" % "1.1.2"
 ```
 
-DO NOT use 1.1.0 because it doesn't work with PlayFramework's hot reload mechanism.
+DO NOT use 1.1.0 or 1.1.1 because it doesn't work with PlayFramework's hot reload mechanism.
 
 The artifacts are hosted here: https://bintray.com/givers/maven/play-json-form
 
