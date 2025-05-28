@@ -121,8 +121,10 @@ Usage
 Add the below line to your `build.sbt`:
 
 ```
-libraryDependencies += "io.github.tanin47" %% "play-json-form" % "1.1.0"
+libraryDependencies += "io.github.tanin47" %% "play-json-form" % "1.1.1"
 ```
+
+DO NOT use 1.1.0 because it doesn't work with PlayFramework's hot reload mechanism.
 
 The artifacts are hosted here: https://bintray.com/givers/maven/play-json-form
 
@@ -207,5 +209,6 @@ Develop
 --------
 
 1. Run `sbt generator/run` in order to generate the classes in `givers.form.generated`.
-2. Run `sbt test` to run all tests
-3. Run `sbt clean publishSigned` to publish
+2. Run `sbt test` to run all tests.
+3. Run `sbt clean publishSigned sonaUpload` to publish.
+4. Go to https://central.sonatype.com/publishing and publish the new version.

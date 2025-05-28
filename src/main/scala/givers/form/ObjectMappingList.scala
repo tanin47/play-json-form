@@ -9,9 +9,10 @@ import scala.util.Try
 
 class ObjectMappingList[T: TypeTag: ClassTag](val fields: Seq[Field[_]]) extends ObjectMapping[T] {
 
-  private[this] val rm = runtimeMirror(getClass.getClassLoader)
-
   def apply(values: Seq[_]): T = {
+    // Due to Play's auto-reload. We'll have to re-fetch the class loader every time.
+    // This is because Play's auto-reload replace the class loader with a new one every time the code is changed.
+    val rm = runtimeMirror(getClass.getClassLoader)
     val tpe = typeOf[T]
     val classSymbol = tpe.typeSymbol.asClass
 
@@ -38,6 +39,9 @@ class ObjectMappingList[T: TypeTag: ClassTag](val fields: Seq[Field[_]]) extends
   }
 
   def unapply(value: T): Seq[_] = {
+    // Due to Play's auto-reload. We'll have to re-fetch the class loader every time.
+    // This is because Play's auto-reload replace the class loader with a new one every time the code is changed.
+    val rm = runtimeMirror(getClass.getClassLoader)
     val instance = rm.reflect(value)
     val fields = typeOf[T].members.sorted.collect { case m: (MethodSymbol @unchecked) if m.isCaseAccessor => m }.toList
     fields.map { f => instance.reflectMethod(f).apply() }

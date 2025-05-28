@@ -1,5 +1,5 @@
 name := "play-json-form"
-version := "1.1.0"
+version := "1.1.1"
 
 lazy val generator = (project in file("generator"))
   .settings(
