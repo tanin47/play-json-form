@@ -16,8 +16,8 @@ private[form] abstract class BaseSpec extends TestSuite {
     override def matches(argument: T) = fn(argument)
   })
   def varArgsThat[T](fn: Seq[T] => Boolean): T = {
-    ThreadSafeMockingProgress.mockingProgress().getArgumentMatcherStorage.reportMatcher(new ArgumentMatcher[mutable.WrappedArray[T]] {
-      override def matches(argument: mutable.WrappedArray[T]) = fn(argument.toSeq)
+    ThreadSafeMockingProgress.mockingProgress().getArgumentMatcherStorage.reportMatcher(new ArgumentMatcher[mutable.ArraySeq[T]] {
+      override def matches(argument: mutable.ArraySeq[T]) = fn(argument.toSeq)
     })
     null.asInstanceOf[T]
   }
@@ -29,7 +29,7 @@ private[form] abstract class BaseSpec extends TestSuite {
   def verify[T](mock: T) = org.mockito.Mockito.verify(mock)
   def verify[T](mock: T, mode: VerificationMode) = org.mockito.Mockito.verify(mock, mode)
   def verifyNoMoreInteractions(mocks: AnyRef*) = org.mockito.Mockito.verifyNoMoreInteractions(mocks:_*)
-  def verifyZeroInteractions(mocks: AnyRef*) = org.mockito.Mockito.verifyZeroInteractions(mocks:_*)
+  def verifyZeroInteractions(mocks: AnyRef*) = org.mockito.Mockito.verifyNoInteractions(mocks: _*)
   def when[T](methodCall: T) = org.mockito.Mockito.when(methodCall)
   def doThrow(toBeThrown: Throwable*) = org.mockito.Mockito.doThrow(toBeThrown:_*)
 }
