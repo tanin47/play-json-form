@@ -1,15 +1,27 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import givers.form.{Form, Mapping, ValidationException}
-import givers.form.Mappings._
-import play.api.libs.json.Json
+import givers.form.Mappings.*
+import play.api.libs.json.{JsValue, Json}
+
+import scala.deriving.Mirror
+import scala.util.Try
 
 case class Product(itemName: String, price: Long)
+
+
+object Tuples:
+  def to[A <: Product](value: A)(using mirror: Mirror.ProductOf[A]): Option[mirror.MirroredElemTypes] =
+    Try(Tuple.fromProductTyped(value)).toOption
+
+  def from[A](value: Product)(using mirror: Mirror.ProductOf[A], ev: value.type <:< mirror.MirroredElemTypes): A =
+    mirror.fromProduct(value)
+
 
 object HomeController {
   val priceRegex = "^([0-9]+).([0-9][0-9])$".r
@@ -26,7 +38,7 @@ object HomeController {
     "validation.home.create",
     obj(
       Product.apply,
-      Product.unapply,
+      Tuples.to[Product],
       "name" -> text(allowEmpty = false),
       "price" -> price
     )
@@ -41,13 +53,13 @@ class HomeController @Inject()()(
 
   import HomeController._
 
-  def showForm = Action { _ =>
+  def showForm: Action[AnyContent] = Action(parse.anyContent) { _ =>
     Ok(views.html.index(
       form.fill(Product("iphone", 59999L)).toJson
     ))
   }
 
-  def submit = Action(parse.json) { implicit request =>
+  def submit: Action[JsValue] = Action(parse.json) { implicit request =>
     form.bindFromRequest() match {
       case Success(data) =>
         println(data)

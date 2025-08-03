@@ -23,26 +23,26 @@ object FormListSpec extends BaseSpec {
   val json = Json.obj("a" -> "test", "b" -> 123)
 
   val tests = Tests {
-    "Form" - {
-      "bindFromRequest" - {
-        "binds JsValue" - {
+    test("Form") {
+      test("bindFromRequest") {
+        test("binds JsValue") {
           val req = FakeRequest("POST", "/").withBody(json)
           assert(form.bindFromRequest()(req) == Success(obj))
         }
 
-        "binds AnyContent" - {
+        test("binds AnyContent") {
           val req = FakeRequest("POST", "/").withJsonBody(json)
           assert(form.bindFromRequest()(req) == Success(obj))
         }
 
-        "binds invalid" - {
-          * - {
+        test("binds invalid") {
+          test("invalid_text_body") {
             val req = FakeRequest("POST", "/").withTextBody("random")
-            val ex = intercept[Exception](form.bindFromRequest()(req))
+            val ex = assertThrows[Exception](form.bindFromRequest()(req))
             assert(ex.getMessage == "Unable to parse body as json.")
           }
 
-          * - {
+          test("invalid_json_string") {
             val req = FakeRequest("POST", "/").withBody(JsString("random"))
             assert(form.bindFromRequest()(req) == Failure(new ValidationException(Seq(
               new ValidationMessage("validation.form.a.error.required"),
@@ -52,12 +52,12 @@ object FormListSpec extends BaseSpec {
         }
       }
 
-      "binds and fills" - {
+      test("binds and fills") {
         assert(form.fill(obj).toJson == json)
         assert(form.bind(json) == Success(obj))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(form.getAllErrors() == Set(
           ErrorSpec("validation.form.a.error.required"),
           ErrorSpec("validation.form.b.error.required"),

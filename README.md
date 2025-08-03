@@ -121,12 +121,10 @@ Usage
 Add the below line to your `build.sbt`:
 
 ```
-libraryDependencies += "io.github.tanin47" %% "play-json-form" % "1.1.2"
+libraryDependencies += "io.github.tanin47" %% "play3-json-form" % "1.2.0"
 ```
 
-DO NOT use 1.1.0 or 1.1.1 because it doesn't work with PlayFramework's hot reload mechanism.
-
-The artifacts are hosted here: https://bintray.com/givers/maven/play-json-form
+The artifacts are hosted here: https://central.sonatype.com/artifact/io.github.tanin47/play3-json-form_3
 
 
 Example

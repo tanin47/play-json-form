@@ -1,9 +1,9 @@
 package givers.form
 
 import givers.form.Mapping.ErrorSpec
-import givers.form.helpers.BaseSpec
+import givers.form.helpers.{BaseSpec, Tuples}
 import play.api.libs.json.{JsDefined, Json}
-import utest.{Tests, _}
+import utest.{Tests, *}
 
 import scala.util.{Failure, Success}
 
@@ -14,7 +14,7 @@ object ComplexObjectMappingSpec extends BaseSpec {
   val mapping = Mappings
     .obj(
       Complex.apply,
-      Complex.unapply,
+      Tuples.to[Complex],
       "first" -> Mappings.text(allowEmpty = false),
       "second" -> Mappings.text(allowEmpty = false).transform[String](
         bind = { (value, context) =>
@@ -33,7 +33,7 @@ object ComplexObjectMappingSpec extends BaseSpec {
       ),
       "nested" -> Mappings.obj(
         Nested.apply,
-        Nested.unapply,
+        Tuples.to[Nested] andThen (_.map(_._1)),
         "third"  -> Mappings.text(allowEmpty = false).transform[String](
           bind = { (value, context) =>
             context.parentOpt.map(_.current("second")) match {
@@ -47,33 +47,33 @@ object ComplexObjectMappingSpec extends BaseSpec {
     )
 
   val tests = Tests {
-    "ComplexObjectMapping" - {
-      "bind" - {
+    test("ComplexObjectMapping") {
+      test("bind") {
         val json = Json.obj("first" -> "f", "second" -> "s", "nested" -> Json.obj("third" -> "t"))
         assert(mapping.bind(JsDefined(json), BindContext.empty) == Success(Complex("f", "s-f", Nested("t-s-f"))))
       }
 
-      "fails on first" - {
-        val json = Json.obj("first" -> "", "second" -> "s",  "nested" -> Json.obj("third" -> "t"))
+      test("fails on first") {
+        val json = Json.obj("first" -> "", "second" -> "s", "nested" -> Json.obj("third" -> "t"))
         assert(mapping.bind(JsDefined(json), BindContext.empty) == Failure(new ValidationException(Seq(new ValidationMessage("first.error.required")))))
       }
 
-      "fails on second" - {
-        val json = Json.obj("first" -> "f", "second" -> "",  "nested" -> Json.obj("third" -> "t"))
+      test("fails on second") {
+        val json = Json.obj("first" -> "f", "second" -> "", "nested" -> Json.obj("third" -> "t"))
         assert(mapping.bind(JsDefined(json), BindContext.empty) == Failure(new ValidationException(Seq(new ValidationMessage("second.error.required")))))
       }
 
-      "fails on third" - {
-        val json = Json.obj("first" -> "f", "second" -> "s",  "nested" -> Json.obj("third" -> ""))
+      test("fails on third") {
+        val json = Json.obj("first" -> "f", "second" -> "s", "nested" -> Json.obj("third" -> ""))
         assert(mapping.bind(JsDefined(json), BindContext.empty) == Failure(new ValidationException(Seq(new ValidationMessage("nested.third.error.required")))))
       }
 
-      "unbind" - {
+      test("unbind") {
         assert(mapping.unbind(Complex("f", "s-f", Nested("t-s-f")), UnbindContext.empty) == Json.obj("first" -> "f", "second" -> "s", "nested" -> Json.obj("third" -> "t")))
         assert(mapping.unbind(Complex("a", "s-a", Nested("t-s-a")), UnbindContext.empty) == Json.obj("first" -> "a", "second" -> "first-is-not-f", "nested" -> Json.obj("third" -> "t")))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(mapping.getAllErrors() == Set(
           ErrorSpec("first.error.required"),
           ErrorSpec("second.error.required"),

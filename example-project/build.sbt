@@ -7,6 +7,6 @@ lazy val jsonForm = RootProject(file("./..").getCanonicalFile.toURI)
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala).dependsOn(jsonForm)
 
-scalaVersion := "2.13.3"
+scalaVersion := "3.3.6"
 
 libraryDependencies += guice

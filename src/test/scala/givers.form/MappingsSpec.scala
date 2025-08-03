@@ -1,209 +1,209 @@
 package givers.form
 
 import givers.form.Mapping.ErrorSpec
-import givers.form.helpers.BaseSpec
-import play.api.libs.json._
+import givers.form.helpers.{BaseSpec, Tuples}
+import play.api.libs.json.*
 import utest.Tests
-import utest._
+import utest.*
 
 import scala.util.{Failure, Success}
 
 
 object MappingsSpec extends BaseSpec {
   val tests = Tests {
-    "boolean" - {
-      "binds/unbinds boolean" - {
+    test("boolean") {
+      test("binds/unbinds boolean") {
         assert(Mappings.boolean.bind(JsDefined(JsBoolean(true)), BindContext.empty) == Success(true))
         assert(Mappings.boolean.unbind(true, UnbindContext.empty) == JsBoolean(true))
         assert(Mappings.boolean.bind(JsDefined(JsBoolean(false)), BindContext.empty) == Success(false))
         assert(Mappings.boolean.unbind(false, UnbindContext.empty) == JsBoolean(false))
       }
 
-      "binds string" - {
+      test("binds string") {
         assert(Mappings.boolean.bind(JsDefined(JsString("true")), BindContext.empty) == Success(true))
         assert(Mappings.boolean.bind(JsDefined(JsString("false")), BindContext.empty) == Success(false))
       }
 
-      "binds missing" - {
+      test("binds missing") {
         assert(Mappings.boolean(translateAbsenceToFalse = true).bind(JsDefined(JsNull), BindContext.empty) == Success(false))
         assert(Mappings.boolean(translateAbsenceToFalse = true).bind(JsUndefined(""), BindContext.empty) == Success(false))
       }
 
-      "binds invalid" - {
+      test("binds invalid") {
         assert(Mappings.boolean.bind(JsUndefined(""), BindContext.empty) == Failure(Mapping.error("error.required")))
         assert(Failure(Mapping.error("error.boolean")) == Mappings.boolean.bind(JsDefined(JsString("random")), BindContext.empty))
         assert(Failure(Mapping.error("error.boolean")) == Mappings.boolean.bind(JsDefined(JsNumber(100L)), BindContext.empty))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.boolean.getAllErrors() == Set(ErrorSpec("error.boolean"), ErrorSpec("error.required")))
       }
     }
 
-    "email" - {
-      "binds/unbind string" - {
+    test("email") {
+      test("binds/unbind string") {
         assert(Mappings.email.bind(JsDefined(JsString(" a@b ")), BindContext.empty) == Success("a@b"))
       }
 
-      "binds invalid" - {
+      test("binds invalid") {
         assert(Mappings.email.bind(JsDefined(JsString(" ab ")), BindContext.empty) == Failure(Mapping.error("error.email")))
         assert(Mappings.email.bind(JsDefined(JsString("")), BindContext.empty) == Failure(Mapping.error("error.email")))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.email.getAllErrors() == Set(ErrorSpec("error.email")))
       }
     }
 
-    "text (not trimmed, allows empty)" - {
-      "binds/unbinds string" - {
+    test("text (not trimmed, allows empty)") {
+      test("binds/unbinds string") {
         assert(Mappings.text(trim = false).bind(JsDefined(JsString("")), BindContext.empty) == Success(""))
         assert(Mappings.text(trim = false).bind(JsDefined(JsString(" txt ")), BindContext.empty) == Success(" txt "))
         assert(Mappings.text(trim = false).unbind(" txt ", UnbindContext.empty) == JsString(" txt "))
       }
 
-      "binds coerce" - {
+      test("binds coerce") {
         assert(Mappings.text().bind(JsDefined(JsBoolean(true)), BindContext.empty) == Success("true"))
         assert(Mappings.text().bind(JsDefined(JsNumber(100L)), BindContext.empty) == Success("100"))
         assert(Mappings.text().bind(JsDefined(JsArray(Seq(JsNumber(100L)))), BindContext.empty) == Success("[100]"))
         assert(Mappings.text().bind(JsDefined(Json.obj("a" -> 123)), BindContext.empty) == Success("""{"a":123}"""))
       }
 
-      "binds invalid" - {
+      test("binds invalid") {
         assert(Mappings.text(coerceToString = false).bind(JsDefined(JsBoolean(true)), BindContext.empty) == Failure(Mapping.error("error.invalid")))
         assert(Mappings.text(coerceToString = false).bind(JsDefined(JsNumber(100L)), BindContext.empty) == Failure(Mapping.error("error.invalid")))
         assert(Mappings.text(coerceToString = false).bind(JsDefined(JsArray(Seq(JsNumber(100L)))), BindContext.empty) == Failure(Mapping.error("error.invalid")))
         assert(Mappings.text(coerceToString = false).bind(JsDefined(Json.obj("a" -> 123)), BindContext.empty) == Failure(Mapping.error("error.invalid")))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.text().getAllErrors() == Set.empty)
         assert(Mappings.text(coerceToString = false).getAllErrors() == Set(ErrorSpec("error.invalid")))
       }
     }
 
-    "text (trimmed, limit length)" - {
-      "binds/unbinds string" - {
+    test("text (trimmed, limit length)") {
+      test("binds/unbinds string") {
         assert(Mappings.text(maxLength = 3).bind(JsDefined(JsString(" txt ")), BindContext.empty) == Success("txt"))
         assert(Mappings.text(maxLength = 3).unbind(" txt ", UnbindContext.empty) == JsString(" txt "))
       }
 
-      "binds invalid" - {
+      test("binds invalid") {
         assert(Mappings.text(maxLength = 3).bind(JsDefined(JsString("aaaa")), BindContext.empty) == Failure(Mapping.error("error.maxLength", 3)))
       }
 
-      "all errors" - {
+      test("all errors") - {
         assert(Mappings.text(maxLength = 3).getAllErrors() == Set(ErrorSpec("error.maxLength", 1)))
       }
     }
 
-    "text (trimmed, forbids empty)" - {
-      "binds/unbinds string" - {
+    test("text (trimmed, forbids empty)") {
+      test("binds/unbinds string") {
         assert(Mappings.text(allowEmpty = false).bind(JsDefined(JsString(" txt ")), BindContext.empty) == Success("txt"))
         assert(Mappings.text(allowEmpty = false).unbind(" txt ", UnbindContext.empty) == JsString(" txt "))
       }
 
-      "binds empty" - {
+      test("binds empty") {
         assert(Mappings.text(allowEmpty = false).bind(JsDefined(JsString("  ")), BindContext.empty) == Failure(Mapping.error("error.required")))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.text(allowEmpty = false).getAllErrors() == Set(ErrorSpec("error.required")))
       }
     }
 
-    "long" - {
-      "binds/unbinds number" - {
+    test("long") {
+      test("binds/unbinds number") {
         assert(Mappings.longNumber(min = 99, max = 101).bind(JsDefined(JsNumber(100)), BindContext.empty) == Success(100L))
         assert(Mappings.longNumber().bind(JsDefined(JsNumber(100)), BindContext.empty) == Success(100L))
         assert(Mappings.longNumber().unbind(100L, UnbindContext.empty) == JsNumber(BigDecimal(100L)))
       }
 
-      "binds string" - {
+      test("binds string") {
         assert(Mappings.longNumber().bind(JsDefined(JsString("100")), BindContext.empty) == Success(100L))
         assert(Mappings.longNumber().bind(JsDefined(JsString("-100")), BindContext.empty) == Success(-100L))
       }
 
-      "validates" - {
+      test("validates") {
         assert(Mappings.longNumber(min = 10L).bind(JsDefined(JsNumber(9L)), BindContext.empty) == Failure(Mapping.error("error.min", 10L)))
         assert(Mappings.longNumber(max = 10L).bind(JsDefined(JsNumber(11L)), BindContext.empty) == Failure(Mapping.error("error.max", 10L)))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.longNumber().getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required")))
         assert(Mappings.longNumber(min = 10L).getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required"), ErrorSpec("error.min", 1)))
         assert(Mappings.longNumber(max = 10L).getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required"), ErrorSpec("error.max", 1)))
       }
 
-      "binds invalid" - {
+      test("binds invalid") {
         assert(Mappings.longNumber().bind(JsDefined(JsBoolean(true)), BindContext.empty) == Failure(Mapping.error("error.number")))
         assert(Mappings.longNumber().bind(JsDefined(JsString("aaa")), BindContext.empty) == Failure(Mapping.error("error.number")))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.longNumber().getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required")))
         assert(Mappings.longNumber(min = 10L).getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required"), ErrorSpec("error.min", 1)))
         assert(Mappings.longNumber(max = 10L).getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required"), ErrorSpec("error.max", 1)))
       }
     }
 
-    "int" - {
-      "binds/unbinds number" - {
+    test("int") {
+      test("binds/unbinds number") {
         assert(Mappings.number(min = 99, max = 101).bind(JsDefined(JsNumber(100)), BindContext.empty) == Success(100))
         assert(Mappings.number().bind(JsDefined(JsNumber(100)), BindContext.empty) == Success(100))
         assert(Mappings.number().unbind(100, UnbindContext.empty) == JsNumber(100))
       }
 
-      "binds string" - {
+      test("binds string") {
         assert(Mappings.number().bind(JsDefined(JsString("100")), BindContext.empty) == Success(100))
         assert(Mappings.number().bind(JsDefined(JsString("-100")), BindContext.empty) == Success(-100))
       }
 
-      "validates" - {
+      test("validates") {
         assert(Mappings.number(min = 10).bind(JsDefined(JsNumber(9)), BindContext.empty) == Failure(Mapping.error("error.min", 10)))
         assert(Mappings.number(max = 10).bind(JsDefined(JsNumber(11)), BindContext.empty) == Failure(Mapping.error("error.max", 10)))
       }
 
-      "binds invalid" - {
+      test("binds invalid") {
         assert(Mappings.number().bind(JsDefined(JsBoolean(true)), BindContext.empty) == Failure(Mapping.error("error.number")))
         assert(Mappings.number().bind(JsDefined(JsString("aaa")), BindContext.empty) == Failure(Mapping.error("error.number")))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.number().getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required")))
         assert(Mappings.number(min = 10).getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required"), ErrorSpec("error.min", 1)))
         assert(Mappings.number(max = 10).getAllErrors() == Set(ErrorSpec("error.number"), ErrorSpec("error.required"), ErrorSpec("error.max", 1)))
       }
     }
 
-    "optional" - {
-      "binds/unbinds empty" - {
+    test("optional") {
+      test("binds/unbinds empty") {
         assert(Mappings.opt(Mappings.boolean).bind(JsUndefined(""), BindContext.empty) == Success(None))
         assert(Mappings.opt(Mappings.boolean).bind(JsDefined(JsNull), BindContext.empty) == Success(None))
         assert(Mappings.opt(Mappings.boolean).unbind(None, UnbindContext.empty) == JsNull)
       }
 
-      "binds an empty string" - {
+      test("binds an empty string") {
         // In Play's Form, an empty string is converted back to None.
         assert(Mappings.opt(Mappings.text, translateEmptyStringToNone = true).bind(JsDefined(JsString("")), BindContext.empty) == Success(None))
         // For the normal mode, we don't do that.
         assert(Mappings.opt(Mappings.text).bind(JsDefined(JsString("")), BindContext.empty) == Success(Some("")))
       }
 
-      "binds/unbinds value" - {
+      test("binds/unbinds value") {
         assert(Mappings.opt(Mappings.boolean).bind(JsDefined(JsBoolean(true)), BindContext.empty) == Success(Some(true)))
         assert(Mappings.opt(Mappings.boolean).unbind(Some(true), UnbindContext.empty) == JsBoolean(true))
       }
     }
 
-    "seq" - {
-      "binds empty" - {
+    test("seq") {
+      test("binds empty") {
         assert(Mappings.seq(Mappings.boolean, nonEmpty = true).bind(JsDefined(JsArray()), BindContext.empty) == Failure(Mapping.error("error.required")))
         assert(Mappings.seq(Mappings.boolean).bind(JsDefined(JsNull), BindContext.empty) == Failure(Mapping.error("error.required")))
         assert(Mappings.seq(Mappings.boolean).bind(JsUndefined(""), BindContext.empty) == Failure(Mapping.error("error.required")))
       }
 
-      "binds invalid element" - {
+      test("binds invalid element") {
         val result = Mappings.seq(Mappings.boolean).bind(
           value = JsDefined(
             JsArray(Seq(
@@ -224,20 +224,20 @@ object MappingsSpec extends BaseSpec {
         assert(result == expected)
       }
 
-      "binds/unbinds empty array" - {
+      test("binds/unbinds empty array") {
         assert(Mappings.seq(Mappings.boolean, translateNoneToEmpty = true).bind(JsDefined(JsNull), BindContext.empty) == Success(Seq.empty))
         assert(Mappings.seq(Mappings.boolean, translateNoneToEmpty = true).bind(JsUndefined(""), BindContext.empty) == Success(Seq.empty))
         assert(Mappings.seq(Mappings.boolean).bind(JsDefined(JsArray()), BindContext.empty) == Success(Seq.empty))
         assert(Mappings.seq(Mappings.boolean).unbind(Seq.empty, UnbindContext.empty) == JsArray())
       }
 
-      "binds/unbinds value" - {
+      test("binds/unbinds value") {
         assert(Mappings.seq(Mappings.boolean, nonEmpty = true).bind(JsDefined(JsArray(Seq(JsBoolean(true)))), BindContext.empty) == Success(Seq(true)))
         assert(Mappings.seq(Mappings.boolean).bind(JsDefined(JsArray(Seq(JsBoolean(true), JsBoolean(false)))), BindContext.empty) == Success(Seq(true, false)))
         assert(Mappings.seq(Mappings.boolean).unbind(Seq(true, false), UnbindContext.empty) == JsArray(Seq(JsBoolean(true), JsBoolean(false))))
       }
 
-      "all errors" - {
+      test("all errors") {
         assert(Mappings.seq(Mappings.number(min = 10)).getAllErrors() == Set(
           ErrorSpec("error.required"),
           ErrorSpec("error.invalid"),
@@ -248,16 +248,16 @@ object MappingsSpec extends BaseSpec {
       }
     }
 
-    "obj" - {
-      "binds invalid" - {
+    test("obj") {
+      test("binds invalid") {
         case class Simple(b: Seq[Boolean])
         case class Complex(a: Seq[Simple])
         val m = Mappings.obj(
           Complex.apply,
-          Complex.unapply,
+          Tuples.to[Complex] andThen (_.map(_._1)),
           "a" -> Mappings.seq(Mappings.obj(
               Simple.apply,
-              Simple.unapply,
+              Tuples.to[Simple] andThen (_.map(_._1)),
               "b" -> Mappings.seq(Mappings.boolean)
             )
           )
@@ -275,12 +275,12 @@ object MappingsSpec extends BaseSpec {
         assert(m.bind(JsDefined(params), BindContext.empty) == expected)
       }
 
-      "binds/unbinds single" - {
+      test("binds/unbinds single") {
         // A case class with one value is a special case because its unapply function doesn't return a tuple, so we explicitly test it.
         case class Obj(a: String)
         val m = Mappings.obj(
           Obj.apply,
-          Obj.unapply,
+          Tuples.to[Obj].andThen(_.map(_._1)),
           "a" -> Mappings.text()
         )
         val params = Json.obj("a" -> "value")
@@ -289,11 +289,11 @@ object MappingsSpec extends BaseSpec {
         assert(m.unbind(expected, UnbindContext.empty) == params)
       }
 
-      "binds/unbinds simple" - {
+      test("binds/unbinds simple") {
         case class Obj(a: String, n: Long)
         val m = Mappings.obj(
           Obj.apply,
-          Obj.unapply,
+          Tuples.to[Obj],
           "a" -> Mappings.text(),
           "n" -> Mappings.longNumber()
         )
@@ -303,21 +303,21 @@ object MappingsSpec extends BaseSpec {
         assert(m.unbind(expected, UnbindContext.empty) == params)
       }
 
-      "binds/unbinds complex" - {
+      test("binds/unbinds complex") {
         case class Simple(b: Boolean)
         case class Complex(a: Seq[Simple], nOpt: Option[Long], s: Simple)
         val m = Mappings.obj(
           Complex.apply,
-          Complex.unapply,
+          Tuples.to[Complex],
           "a" -> Mappings.seq(Mappings.obj(
             Simple.apply,
-            Simple.unapply,
+            Tuples.to[Simple].andThen(_.map(_._1)),
             "b" -> Mappings.boolean
           )),
           "n" -> Mappings.opt(Mappings.longNumber),
           "s" -> Mappings.obj(
             Simple.apply,
-            Simple.unapply,
+            Tuples.to[Simple].andThen(_.map(_._1)),
             "bb" -> Mappings.boolean
           )
         )

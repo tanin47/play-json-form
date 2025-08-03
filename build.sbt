@@ -1,4 +1,4 @@
-name := "play-json-form"
+name := "play3-json-form"
 version := "1.2.0"
 
 lazy val generator = (project in file("generator"))
@@ -8,16 +8,15 @@ lazy val generator = (project in file("generator"))
     mainClass := Some("givers.form.generator.Main"),
     publish / skip := true
   )
-scalaVersion := "2.13.16"
-crossScalaVersions := Seq("3.3.6", scalaVersion.value)
+scalaVersion := "3.3.6"
 
 Test / parallelExecution := false
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % "2.9.7",
-  "com.typesafe.play" %% "play-test" % "2.9.7" % Test,
+  "org.playframework" %% "play" % "3.0.8",
+  "org.playframework" %% "play-test" % "3.0.8" % Test,
   "org.mockito" % "mockito-core" % "5.18.0" % Test,
-  "com.lihaoyi" %% "utest" % "0.8.5" % Test
+  "com.lihaoyi" %% "utest" % "0.9.0" % Test
 )
 testFrameworks += new TestFramework("utest.runner.Framework")
 
