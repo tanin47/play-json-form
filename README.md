@@ -121,7 +121,7 @@ Usage
 Add the below line to your `build.sbt`:
 
 ```
-libraryDependencies += "io.github.tanin47" %% "play3-json-form" % "1.2.0"
+libraryDependencies += "io.github.tanin47" %% "play3-json-form" % "1.3.0"
 ```
 
 The artifacts are hosted here: https://central.sonatype.com/artifact/io.github.tanin47/play3-json-form_3
