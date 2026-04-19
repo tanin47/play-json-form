@@ -174,7 +174,9 @@ object Main {
   def main(args: Array[String]): Unit = {
     Files.createDirectories(PATH)
 
-    val objectMappingClassDefs = 1.to(22).map(generateObjectMappingClassDef)
+    val MAX_FIELD_COUNT = 100
+
+    val objectMappingClassDefs = 1.to(MAX_FIELD_COUNT).map(generateObjectMappingClassDef)
     val objectMappingImports = Seq(
       IMPORT("givers.form.Mapping.Field"),
       IMPORT("givers.form.ObjectMapping"),
@@ -194,7 +196,7 @@ object Main {
       )
     )
 
-    val objFunDefs = 1.to(22).map(generateObjFunDef)
+    val objFunDefs = 1.to(MAX_FIELD_COUNT).map(generateObjFunDef)
     val objImports = Seq(
       IMPORT("givers.form.Mapping.Field"),
       IMPORT("givers.form.ObjectMapping"),
@@ -213,7 +215,7 @@ object Main {
         .inPackage("givers.form.generated"))
     )
 
-    val formFunDefs = 1.to(22).map(generateFormFunDef)
+    val formFunDefs = 1.to(MAX_FIELD_COUNT).map(generateFormFunDef)
     val formImports = Seq(
       IMPORT("givers.form.Form"),
       IMPORT("givers.form.Mapping")
